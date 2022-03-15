@@ -6,7 +6,7 @@ let timeInterval;
 function App() {
   const [breakLength, setBreakLength] = useState(5)
   const [sessionLength, setSessionLength] = useState(25)
-  const [timer, setTimer] = useState("25:00")
+  const [timer, setTimer] = useState("01:00")
   const [timeOut, setTimeOut] = useState(false)
 
   const incrementBreak = () => {
@@ -67,6 +67,10 @@ function App() {
       // If time is out
       if (tempTimer === "00:01") {
         clearInterval(timeInterval)
+
+        // For Beep sound
+        const audio = new Audio("https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav")
+        audio.play()
       }
 
       tempTimer = `${min}:${sec}`;
