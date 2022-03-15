@@ -2,41 +2,94 @@ import './App.scss'
 import { useState } from 'react'
 
 let timeInterval;
+let isTimerStart = false;
+let defBreakLength = 5;
+let defSessionLength = 25;
+let defTimerTime = "25:00";
+let defTimerMode = "Session";
+
+// For time correcting
+function getCorrectTime(time) {
+  return time < 10 ? `0${time}` : time;
+}
 
 function App() {
-  const [breakLength, setBreakLength] = useState(5)
-  const [sessionLength, setSessionLength] = useState(25)
-  const [timer, setTimer] = useState("01:00")
+  const [breakLength, setBreakLength] = useState(defBreakLength)
+  const [sessionLength, setSessionLength] = useState(defSessionLength)
+  const [timer, setTimer] = useState(defTimerTime)
   const [timeOut, setTimeOut] = useState(false)
+  const [timerMode, setTimerMode] = useState("Session")
 
   const incrementBreak = () => {
-    if (breakLength === 60) return
+    if (defBreakLength === 60 || isTimerStart) return
     
-    setBreakLength(breakLength + 1)
-  }
+    defBreakLength++;
 
+    setBreakLength(defBreakLength)
+
+    // Check Timer mode for change
+    if (defTimerMode === "Break") {
+      defTimerTime = `${getCorrectTime(defBreakLength)}:00`;
+      setTimer(`${getCorrectTime(defBreakLength)}:00`)
+    }
+  }
+  
   const decrementBreak = () => {
-    if (breakLength === 1) return
+    if (defBreakLength === 1 || isTimerStart) return
     
-    setBreakLength(breakLength - 1)
-  }
+    defBreakLength--;
+    
+    setBreakLength(defBreakLength)
 
+    // Check Timer mode for change
+    if (defTimerMode === "Break") {
+      defTimerTime = `${getCorrectTime(defBreakLength)}:00`;
+      setTimer(`${getCorrectTime(defBreakLength)}:00`)
+    }
+  }
+  
   const incrementSession = () => {
-    if (sessionLength === 60) return
+    if (defSessionLength === 60 || isTimerStart) return
     
-    setSessionLength(sessionLength + 1)
+    defSessionLength++;
+    
+    setSessionLength(defSessionLength)
+
+    // Check Timer mode for change
+    if (defTimerMode === "Session") {
+      defTimerTime = `${getCorrectTime(defSessionLength)}:00`;
+      setTimer(`${getCorrectTime(defSessionLength)}:00`)
+    }
+  }
+  
+  const decrementSession = () => {
+    if (defSessionLength === 1 || isTimerStart) return
+    
+    defSessionLength--;
+    
+    setSessionLength(defSessionLength)
+
+    // Check Timer mode for change
+    if (defTimerMode === "Session") {
+      defTimerTime = `${getCorrectTime(defSessionLength)}:00`;
+      setTimer(`${getCorrectTime(defSessionLength)}:00`)
+    }
   }
 
-  const decrementSession = () => {
-    if (sessionLength === 1) return
-    
-    setSessionLength(sessionLength - 1)
+  const startStopTimer = () => {
+    if (isTimerStart) {
+      clearInterval(timeInterval)
+      isTimerStart = false;
+    } else {
+      countDownTimer();
+      isTimerStart = true;
+    }
   }
 
   const countDownTimer = () => {
     // Selected minute and second
-    let min = timer.substring(0, 2)
-    let sec = timer.substring(3, 5)
+    let min = defTimerTime.substring(0, 2)
+    let sec = defTimerTime.substring(3, 5)
     let tempTimer;
 
     timeInterval = setInterval(() => {
@@ -45,9 +98,7 @@ function App() {
         min--;
 
         // If minute is less than 10 then correct it 
-        if (min < 10) {
-          min = "0" + min;
-        }
+        min = getCorrectTime(min)
         
         sec = "60";
       }
@@ -55,14 +106,14 @@ function App() {
       // Add class "time-out" if time is less than 1 minute
       if (min === "00") {
         setTimeOut(true)
+      } else {
+        setTimeOut(false)
       }
 
       sec--;
       
       // If second is less than 10 then correct it 
-      if (sec < 10) {
-        sec = "0" + sec;
-      }
+      sec = getCorrectTime(sec)
 
       // If time is out
       if (tempTimer === "00:01") {
@@ -71,6 +122,19 @@ function App() {
         // For Beep sound
         const audio = new Audio("https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav")
         audio.play()
+
+        // Change timer mode
+        if (defTimerMode === "Session") {
+          defTimerMode = "Break"
+          setTimerMode("Break")
+          defTimerTime = `${getCorrectTime(defBreakLength)}:00`;
+          countDownTimer()
+        } else {
+          defTimerMode = "Session"
+          setTimerMode("Session")
+          defTimerTime = `${getCorrectTime(defSessionLength)}:00`;
+          countDownTimer()
+        }
       }
 
       tempTimer = `${min}:${sec}`;
@@ -118,19 +182,19 @@ function App() {
           </div>
         </div>
         <div className="clock-timer">
-          <p id="timer-label">Session</p>
+          <p id="timer-label">{timerMode}</p>
           <p id="time-left" className={timeOut ? "time-out" : null}>{timer}</p>
         </div>
         <div className="timer-control">
           <i 
             id="start_stop"
             className="fa fa-play fa-2x" 
-            onClick={countDownTimer}
+            onClick={startStopTimer}
           />
           <i 
             id="start_stop"
             className="fa fa-pause fa-2x" 
-            onClick={() => clearInterval(timeInterval)}
+            onClick={startStopTimer}
           />
           <i 
             id="reset"
