@@ -106,7 +106,7 @@ function App() {
 
       // Change Time
       defTimerTime = `${min}:${sec}`;
-      setTimer(`${min}:${sec}`)
+      setTimer(defTimerTime)
 
       // If time is out
       if (defTimerTime === "00:00") {
@@ -120,16 +120,19 @@ function App() {
 
         // Change timer mode
         if (defTimerMode === "Session") {
+          defTimerTime = `${getCorrectTime(defBreakLength)}:01`;
           defTimerMode = "Break"
-          setTimerMode("Break")
-          defTimerTime = `${getCorrectTime(defBreakLength)}:00`;
-          countDownTimer()
         } else {
+          defTimerTime = `${getCorrectTime(defSessionLength)}:01`;
           defTimerMode = "Session"
-          setTimerMode("Session")
-          defTimerTime = `${getCorrectTime(defSessionLength)}:00`;
-          countDownTimer()
         }
+        
+        // For change time and mode the same time
+        setTimeout(() => {
+          setTimerMode(defTimerMode)
+        }, 1000);
+
+        countDownTimer()
       }
     }, 1000);
   }
@@ -209,7 +212,7 @@ function App() {
           </div>
         </div>
         <div className="clock-timer">
-          <p id="timer-label">{timerMode}</p>
+          <p id="timer-label" className={timeOut ? "time-out" : null}>{timerMode}</p>
           <p id="time-left" className={timeOut ? "time-out" : null}>{timer}</p>
           <audio 
             id="beep"
