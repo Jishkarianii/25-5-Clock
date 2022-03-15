@@ -76,21 +76,10 @@ function App() {
     }
   }
 
-  const startStopTimer = () => {
-    if (isTimerStart) {
-      clearInterval(timeInterval)
-      isTimerStart = false;
-    } else {
-      countDownTimer();
-      isTimerStart = true;
-    }
-  }
-
   const countDownTimer = () => {
     // Selected minute and second
     let min = defTimerTime.substring(0, 2)
     let sec = defTimerTime.substring(3, 5)
-    let tempTimer;
 
     timeInterval = setInterval(() => {
       // Check if timer second is 0
@@ -115,12 +104,18 @@ function App() {
       // If second is less than 10 then correct it 
       sec = getCorrectTime(sec)
 
+      // Change Time
+      defTimerTime = `${min}:${sec}`;
+      setTimer(`${min}:${sec}`)
+
       // If time is out
-      if (tempTimer === "00:01") {
+      if (defTimerTime === "00:00") {
+        // Stop timer
         clearInterval(timeInterval)
 
         // For Beep sound
-        const audio = new Audio("https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav")
+        const audio = document.getElementById("beep")
+        audio.currentTime = 0
         audio.play()
 
         // Change timer mode
@@ -136,10 +131,42 @@ function App() {
           countDownTimer()
         }
       }
-
-      tempTimer = `${min}:${sec}`;
-      setTimer(`${min}:${sec}`)
     }, 1000);
+  }
+
+  const startStopTimer = () => {
+    if (isTimerStart) {
+      clearInterval(timeInterval)
+      isTimerStart = false;
+    } else {
+      countDownTimer();
+      isTimerStart = true;
+    }
+  }
+
+  const resetTimer = () => {
+    // Stop timer 
+    clearInterval(timeInterval)
+
+    // Stop beep sound
+    const audio = document.getElementById("beep")
+    audio.currentTime = 0
+    audio.pause()
+
+    defBreakLength = 5;
+    setBreakLength(defBreakLength)
+
+    defSessionLength = 25;
+    setSessionLength(defSessionLength)
+
+    defTimerTime = "25:00";
+    setTimer(defTimerTime)
+
+    defTimerMode = "Session";
+    setTimerMode(defTimerMode)
+
+    isTimerStart = false;
+    setTimeOut(false)
   }
 
 
@@ -184,6 +211,10 @@ function App() {
         <div className="clock-timer">
           <p id="timer-label">{timerMode}</p>
           <p id="time-left" className={timeOut ? "time-out" : null}>{timer}</p>
+          <audio 
+            id="beep"
+            src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav" 
+          />
         </div>
         <div className="timer-control">
           <i 
@@ -199,7 +230,7 @@ function App() {
           <i 
             id="reset"
             className="fa fa-refresh fa-2x" 
-            onClick={null}
+            onClick={resetTimer}
           />
         </div>
         <div className="author">
